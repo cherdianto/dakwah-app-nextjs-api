@@ -35,7 +35,6 @@
       $(document).ready(function() {
         var socket = io();
         var logsEl = $("#logs");
-        var isQrReady = false;
 
         socket.on('message', function(msg) {
           logsEl.append($('<li>').text(msg));
@@ -52,7 +51,6 @@
         })
 
         socket.on('qr', function(qr) {
-          isQrReady = true;
           $("#qrcode").attr("src", qr);
         });
 
