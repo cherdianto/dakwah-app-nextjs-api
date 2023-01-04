@@ -4,8 +4,22 @@ const qrcode = require('qrcode');
 const socketIO = require('socket.io');
 const http = require('http');
 const dbConnection = require('./libraries/dbConnect')
+const {MongoStore} = require('wwebjs-mongo')
+const mongoose = require('mongoose')
+// const ejs = require('ejs')
+const path = require('path')
+const asyncHandler = require('express-async-handler')
 const dotenv = require('dotenv')
 const env = dotenv.config().parsed
+
+const errorHandler = require('./middlewares/errorMiddleware')
+const authRouter = require('./routers/authRouter')
+const deviceRouter = require('./routers/deviceRouter')
+const messageRouter = require('./routers/messageRouter')
+const verifyToken = require('./middlewares/verifyToken');
+const activeDeviceId = require('./libraries/activeDeviceId');
+const User = require('./models/User');
+// const libsession = require('./session');
 
 // const fs = require('fs')
 const app = express()
@@ -14,16 +28,21 @@ const io = socketIO(server)
 
 const PORT = env.PORT
 
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'ejs');
+
 dbConnection();
+const store = new MongoStore({mongoose: mongoose})
 
 let sessions = {}
 let rooms = []
+
 
 const session = (id) => {
 
     const pptOptions = {
         puppeteer: {
-            headless: true,
+            headless: false,
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -34,8 +53,10 @@ const session = (id) => {
                 '--disable-gpu'
             ]
         },
-        authStrategy: new LocalAuth({
-            clientId: id
+        authStrategy: new RemoteAuth({
+            store: store,
+            clientId: id,
+            backupSyncIntervalMs: 300000
         }),
     }
 
@@ -43,11 +64,14 @@ const session = (id) => {
 
     sessions[id].initialize()
 
+    // console.log(sessions)
+    // console.log(io)
+
     let statusConnection = {}
     io.on('connection', (socket) => {
         let now = new Date().toLocaleString();
         statusConnection[id] = 'initializing'
-        console.log(rooms)
+        // console.log(rooms)
 
         if(id == undefined || id === ""){
             return false
@@ -71,9 +95,8 @@ const session = (id) => {
             console.log(socket)
         })
 
-
         sessions[`${id}`].on('qr', (qr) => {
-            console.log('rooms ??? ' +rooms)
+            console.log('rooms ??? ' + id + ' ' + rooms)
             // console.log(whatsapp)
             now = new Date().toLocaleString();
             statusConnection[id] = 'qr';
@@ -146,25 +169,44 @@ app.use(express.urlencoded({
 }));
 
 // whatsapp.initialize();
+// routers
+app.use('/auth', authRouter )
+app.use('/device', deviceRouter )
+app.use('/message', messageRouter )
 
-app.get('/scan', async (req, res) => {
-    const id = req.body.id || req.query.id
+// HARUSNYA UNDER /DEVICE/SCAN/
+app.get('/scan/:userid/users/:deviceId', asyncHandler(async (req, res) => {
+    // const jwtId = req.jwt.id 
+    const jwtId = req.params.userid 
+    const id = req.params.deviceId
+
+    const user = await User.findById(jwtId)
+    if(!user){
+        res.status(400)
+        throw new Error("NO_USER_FOUND")
+    }
+    
+    
+    const isDeviceIdActive = await activeDeviceId(id, user)
+    if(!isDeviceIdActive){
+        res.status(400)
+        throw new Error("ACTIVE_DEVICE_NOT_FOUND")
+    }
+    
     console.log('scan ' + id)
 
     try {
-        console.log('135')
-        const response = await session(id)
-        console.log(response)
-        
-        res.sendFile('index.html', {
-            root: __dirname
-        });
+        // const response = await session(id)
+        await session(id)
+        // sessions[`${id}`] = await libsession(id, sessions)
+        res.render('index')
     } catch (error) {
+        console.log(error)
         res.status(500).json({
             msg: 'scan error ' + id
         })
     }
-});
+}));
 
 app.get('/init', async (req, res) => {
     const id = req.body.id
@@ -216,6 +258,10 @@ app.get('/get-state', async (req, res) => {
     }
     
 })
+
+// console.log(sessions)
+
+// SAMPE SINI AJA
 
 // app.get('/device/logout', async (req, res) => {
 //     try {
@@ -339,6 +385,8 @@ app.get('/get-state', async (req, res) => {
 //             });
 //         });
 // });
+
+app.use(errorHandler)
 
 server.listen(PORT, () => {
     console.log('App listen on port ', PORT);
