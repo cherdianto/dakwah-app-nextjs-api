@@ -19,9 +19,10 @@ const Schema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'active'
     },
-    device: {
-        type: Array
-    },
+    // device: [{
+    //     type: mongoose.Types.ObjectId,
+    //     ref: 'Device'
+    // }],
     refreshToken: {
         type: String
     },

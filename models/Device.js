@@ -10,14 +10,15 @@ const Schema = new mongoose.Schema({
         type: String
     },
     number: {
-        type: Number
+        type: String
     },
     status: {
         type: Boolean,
         default: false
     },
     connectionStatus: {
-        type: String
+        type: String,
+        default: 'disconnected'
     },
     createdAt: {
         type: Number

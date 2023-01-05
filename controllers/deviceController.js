@@ -1,4 +1,5 @@
 const User = require('../models/User')
+const Device = require('../models/Device')
 const asyncHandler = require('express-async-handler')
 const mongoose = require('mongoose')
 const shortid = require('shortid')
@@ -7,7 +8,7 @@ const activeDeviceId = require('../libraries/activeDeviceId')
 const libsession = require('../session')
 
 const addDevice = asyncHandler(async(req, res) => {
-    const jwtId = req.jwt.id
+    // const userId = req.user._id
     const number = req.body.number
     
     if(!number) {
@@ -15,83 +16,45 @@ const addDevice = asyncHandler(async(req, res) => {
         throw new Error("UNAUTHORIZED")
     }
 
-    if(!jwtId) {
-        res.status(400)
-        throw new Error("USERID_IS_REQUIRED")
-    }
-
-    if(!mongoose.Types.ObjectId.isValid(jwtId)){
-        res.status(400)
-        throw new Error("INVALID_USERID")
-    }
-
-    const user = await User.findById(jwtId)
-
-    const isDuplicateNumber = await duplicateNumber(number, user.device)
+    const isDuplicateNumber = await Device.findOne({number: number})
     if(isDuplicateNumber) {
         res.status(400)
         throw new Error("NUMBER_ALREADY_EXIST")
     }
 
-    const newDevice = {
-        id: mongoose.Types.ObjectId(),
-        deviceId: req.body.deviceName || shortid.generate(),
-        number,
-        status: true,
-        qrCode: '',
-        connectionStatus: 'disconnected'
-    }
+    const newDevice = await Device.create({
+        userId: req.user._id,
+        deviceName: req.body.deviceName || shortid.generate(),
+        number
+    })
 
-    user.device.push(newDevice)
-    user.save()
-
-    if(!user){
-        res.status(404)
-        throw new Error('ADD_DEVICE_FAILED')
+    if(!newDevice){
+        res.status(500)
+        throw new Error("ADD_DEVICE_FAILED")
     }
 
     res.status(200).json({
         status: true,
         message: "ADD_DEVICE_SUCCESS",
-        user: user.device
+        device: newDevice
     })
 })
 
 const showDevices = asyncHandler(async(req, res) => {
-    // url = doman/device/userId/
-    // const userId = req.params.userId
-    const jwtId = req.jwt.id
-    
-    if(!jwtId) {
-        res.status(400)
-        throw new Error("USERID_IS_REQUIRED")
-    }
+    const userId = req.user._id
 
-    if(!mongoose.Types.ObjectId.isValid(jwtId)){
-        res.status(400)
-        throw new Error("INVALID_USERID")
-    }
-
-    const user = await User.findById(jwtId)
-    
-    if(!user){
-        res.status(404)
-        throw new Error('USER_NOT_FOUND')
-    }
+    const device = await Device.find({userId})
 
     res.status(200).json({
         status: true,
         message: "GET_USER_DEVICE_SUCCESS",
-        user: {
-            id: user.id,
-            device: user.device
-        }
+        device
     })
 })
 
 const scanQrcode = asyncHandler(async (req, res) => {
     // const jwtId = req.jwt.id 
-    console.log(req.sessions)
+    // console.log(req.sessions)
     let sessions = req.sessions
     let io = req.io
     const jwtId = req.params.userid
