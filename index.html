@@ -54,6 +54,10 @@
           $("#qrcode").attr("src", qr);
         });
 
+        socket.on('close', function(cls) {
+          window.close();
+        });
+
       });
     </script>
 </body>
