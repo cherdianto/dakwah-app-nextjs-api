@@ -20,6 +20,9 @@ const Schema = new mongoose.Schema({
         type: String,
         default: 'disconnected'
     },
+    apiKey: {
+        type: String
+    },
     createdAt: {
         type: Number
     },

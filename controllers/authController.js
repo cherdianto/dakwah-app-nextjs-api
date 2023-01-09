@@ -3,6 +3,8 @@ const bcrypt = require('bcrypt')
 const asyncHandler = require('express-async-handler')
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
+const Token = require("../models/Token")
+const crypto = require('crypto')
 
 const env = dotenv.config().parsed
 
@@ -11,6 +13,10 @@ const refreshSecretKey = env.REFRESH_SECRET_KEY
 const accessExpiry = env.ACCESS_EXPIRY
 const refreshExpiry = env.REFRESH_EXPIRY
 
+function generateToken() {
+    const buffer = crypto.randomBytes(32);
+    return crypto.createHash('sha256').update(buffer).digest('hex');
+}
 
 const generateAccessToken = (payload) => {
     return jwt.sign(payload, accessSecretKey, {
@@ -117,9 +123,13 @@ const login = asyncHandler(async (req, res) => {
     }
 
     // next, generate tokens (access & refresh)
-    const accessToken = generateAccessToken({id: user._id})
+    const accessToken = generateAccessToken({
+        id: user._id
+    })
 
-    const refreshToken = generateRefreshToken({id: user._id})
+    const refreshToken = generateRefreshToken({
+        id: user._id
+    })
 
     // store refreshToken to database
     const updateDb = await User.updateOne({
@@ -175,7 +185,7 @@ const logout = asyncHandler(async (req, res) => {
         }
     })
 
-    if(!updateDb) {
+    if (!updateDb) {
         res.status(500)
         throw new Error("LOG_OUT_FAILED")
     }
@@ -188,19 +198,55 @@ const logout = asyncHandler(async (req, res) => {
     })
 })
 
-const changePassword = asyncHandler( async(req, res) => {
+const changePassword = asyncHandler(async (req, res) => {
     // form : email, oldpassword, newpassword
 
-    const { email, oldPassword, newPassword } = req.body
+    const {
+        email,
+        oldPassword,
+        newPassword
+    } = req.body
 
-    const user = await User.findOne({email})
-    if(!user) {
+    const user = req.user
+
+    // console.log(email)
+    // console.log(user)
+
+    if (!email || email == '') {
+        res.status(400)
+        throw new Error("EMAIL_REQUIRED")
+    }
+
+    // if(!oldPassword || oldPassword == ''){
+    //     res.status(400)
+    //     throw new Error("OLD_PASSWORD_REQUIRED")
+    // }
+
+    if (!newPassword || newPassword == '') {
+        res.status(400)
+        throw new Error("NEW_PASSWORD_REQUIRED")
+    }
+
+    if (newPassword.trim().length === 0 || newPassword.includes(" ")) {
+        res.status(400)
+        throw new Error("PASSWORD_CONTAIN_SPACE")
+    }
+
+    if (email !== user.email) {
+        res.status(400)
+        throw new Error("EMAIL_NOT_FOUND")
+    }
+
+    const oldUserData = await User.findOne({
+        email
+    })
+    if (!oldUserData) {
         res.status(400)
         throw new Error("USER_NOT_FOUND")
     }
 
-    const isMatch = bcrypt.compareSync( oldPassword, user.password)
-    if(!isMatch) {
+    const isMatch = bcrypt.compareSync(oldPassword, oldUserData.password)
+    if (!isMatch) {
         res.status(400)
         throw new Error("WRONG_PASSWORD")
     }
@@ -211,13 +257,15 @@ const changePassword = asyncHandler( async(req, res) => {
     let hashedPassword = await bcrypt.hash(newPassword, salt)
 
     // update db
-    const updateDb = await User.updateOne({ _id: user._id }, {
+    const updateDb = await User.updateOne({
+        _id: user._id
+    }, {
         $set: {
             password: hashedPassword
         }
     })
 
-    if(!updateDb) {
+    if (!updateDb) {
         res.status(500)
         throw new Error("PASSWORD_CHANGE_FAILED")
     }
@@ -251,7 +299,9 @@ const refreshToken = asyncHandler(async (req, res) => {
             throw new Error("INVALID_REFRESH_TOKEN")
         }
 
-        const accessToken = generateAccessToken({ id: user._id})
+        const accessToken = generateAccessToken({
+            id: user._id
+        })
 
         res.status(200).json({
             status: true,
@@ -261,10 +311,95 @@ const refreshToken = asyncHandler(async (req, res) => {
     })
 })
 
-module.exports={
+const getUser = asyncHandler(async (req, res) => {
+
+    const user = await User.findById(req.user._id).populate('devices')
+    console.log(user)
+    res.status(200).json({
+        status: true,
+        message: "GET_USER_SUCCESS",
+        user
+    })
+})
+
+const resetPassword = asyncHandler(async (req, res) => {
+    // form : email, oldpassword, newpassword
+    console.log(req.query.email)
+
+    const email = req.query.email
+
+    // const user = req.user
+
+    // console.log(email)
+    // console.log(user)
+
+    if (!email) {
+        res.status(400)
+        throw new Error("EMAIL_REQUIRED")
+    }
+
+    const user = await User.findOne({
+        email
+    })
+    if (!user) {
+        res.status(400)
+        throw new Error("USER_NOT_FOUND")
+    }
+
+    let expiryAt = new Date()
+    // expiryAt.setHours(expiryAt.getHours() + 24)
+    expiryAt.setMinutes(expiryAt.getMinutes() + 2)
+
+    const newToken = await Token.create({
+        email,
+        token: generateToken(),
+        expiryAt
+    })
+
+    console.log(newToken)
+    if(!newToken){
+        res.status(400)
+        throw new Error("RESET_LINK_FAILED")
+    }
+
+    res.status(200).json({
+        status: true,
+        message: "RESET_LINK_SUCCESS",
+        token: newToken
+    })
+})
+
+const validateResetLink = asyncHandler(async (req, res) => {
+    const token = req.query.token
+
+    const isValid = await Token.findOne({token})
+
+    if(!isValid){
+        res.status(400)
+        throw new Error("INVALID_TOKEN")
+    }
+
+    if(new Date(isValid.expiryAt) < Date.now()){
+        res.status(400)
+        throw new Error("EXPIRED")
+    }
+
+    // res.status(200)
+    res.render('resetPassword')
+    // res.status(200).json({
+    //     status: true,
+    //     message: "LINK_VALID",
+    //     isValid
+    // })
+})
+
+module.exports = {
     refreshToken,
     changePassword,
     logout,
     login,
-    register
+    register,
+    getUser,
+    resetPassword,
+    validateResetLink
 }

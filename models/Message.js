@@ -9,17 +9,19 @@ const Schema = new mongoose.Schema({
     deviceId: {
         type: mongoose.Types.ObjectId,
         required: true,
-        ref: 'User.device'
+        ref: 'User'
     },
     to: {
-        type: Number
+        type: Number,
+        required: true
     },
     isGroup: {
         type: Boolean,
         default: false
     },
     message: {
-        type: String
+        type: String,
+        required: true
     },
     ref_id: {
         type: String

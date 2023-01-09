@@ -24,7 +24,7 @@ const deviceRouter = require('./routers/deviceRouter')
 const messageRouter = require('./routers/messageRouter')
 const verifyToken = require('./middlewares/verifyToken');
 const activeDeviceId = require('./libraries/activeDeviceId');
-const User = require('./models/User');
+const Device = require('./models/Device');
 const libsession = require('./session');
 const bypassVariable = require('./middlewares/bypassVariable');
 const sessionInit = require('./libraries/sessionInit');
@@ -50,27 +50,32 @@ console.log(sessions)
 
 const restoreActiveUserSessions = asyncHandler(async () => {
     // get all active users
-    let users = await User.find({
-        $and: [{
-            device: {
-                $exists: true,
-                $ne: []
-            }
-        }, {
-            status: 'active'
-        }]
+    // let users = await User.find({
+    //     $and: [{
+    //         devices: {
+    //             $exists: true,
+    //             $ne: []
+    //         }
+    //     }, {
+    //         status: 'active'
+    //     }]
+    // })
+
+    const devices = await Device.find({
+        status: true
     })
 
     // get all active devices from active users
     let activeDevices = []
-    users.forEach(user => {
-        user.device.forEach(chd => {
-            if (chd.status === true) {
-                activeDevices.push(chd.id.valueOf())
-            }
+    // users.forEach(user => {
+        devices.forEach(device => {
+            // if (device.status === true) {
+                activeDevices.push(device._id.valueOf())
+            // }
         })
-    })
+    // })
 
+    console.log(activeDevices)
     // restore each client
     activeDevices.forEach((id, index) => {
         setTimeout(() => {
@@ -81,7 +86,7 @@ const restoreActiveUserSessions = asyncHandler(async () => {
     })
 })
 
-// restoreActiveUserSessions()
+restoreActiveUserSessions()
 
 // index routing and middleware
 app.use(express.json());
@@ -94,25 +99,25 @@ app.use('/auth', authRouter)
 app.use('/device', bypassVariable(io, sessions), deviceRouter)
 app.use('/message', messageRouter)
 
-app.get('/get-state', async (req, res) => {
-    const id = req.body.id
-    console.log('getState ' + id)
+// app.get('/get-state', async (req, res) => {
+//     const id = req.body.id
+//     console.log('getState ' + id)
 
-    try {
-        const response = await sessions[id].getState()
+//     try {
+//         const response = await sessions[id].getState()
 
-        res.status(200).json({
-            msg: `getState ${id} OK`,
-            state: response
-        })
-    } catch (error) {
-        res.status(500).json({
-            msg: 'getState ' + id + ' error',
-            state: 'session not found'
-        })
-    }
+//         res.status(200).json({
+//             msg: `getState ${id} OK`,
+//             state: response
+//         })
+//     } catch (error) {
+//         res.status(500).json({
+//             msg: 'getState ' + id + ' error',
+//             state: 'session not found'
+//         })
+//     }
 
-})
+// })
 
 app.use(errorHandler)
 
