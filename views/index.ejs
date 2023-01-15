@@ -52,6 +52,7 @@
 
         socket.on('qr', function(qr) {
           $("#qrcode").attr("src", qr);
+          $("#qr-display").show();
         });
 
         socket.on('close', function(cls) {
