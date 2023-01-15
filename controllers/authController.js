@@ -35,6 +35,7 @@ const register = asyncHandler(async (req, res) => {
     const {
         fullname,
         email,
+        whatsapp,
         password
     } = req.body
 
@@ -47,6 +48,11 @@ const register = asyncHandler(async (req, res) => {
     if (!email) {
         res.status(400)
         throw new Error('EMAIL_REQUIRED')
+    }
+
+    if (!whatsapp) {
+        res.status(400)
+        throw new Error('WHATSAPP_REQUIRED')
     }
 
     if (!password) {
@@ -73,6 +79,7 @@ const register = asyncHandler(async (req, res) => {
         const user = await User.create({
             fullname,
             email,
+            whatsapp,
             password: hashedPassword
         })
 
@@ -161,6 +168,7 @@ const login = asyncHandler(async (req, res) => {
 })
 
 const logout = asyncHandler(async (req, res) => {
+    console.log(req.cookies)
     const userRefreshToken = req.cookies.refreshToken
 
     if (!userRefreshToken) {
@@ -313,7 +321,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 
 const getUser = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(req.user._id).populate('devices')
+    const user = await User.findById(req.user._id)
     console.log(user)
     res.status(200).json({
         status: true,
@@ -384,8 +392,8 @@ const validateResetLink = asyncHandler(async (req, res) => {
         throw new Error("EXPIRED")
     }
 
-    // res.status(200)
-    res.render('resetPassword')
+    res.status(200).json("LINK ACTIVE, PROVIDE A FORM(OLD PWD, NEW PWD) TO USER VIA EJS")
+    // res.render('resetPassword')
     // res.status(200).json({
     //     status: true,
     //     message: "LINK_VALID",

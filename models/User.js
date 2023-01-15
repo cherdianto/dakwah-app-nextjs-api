@@ -10,6 +10,11 @@ const Schema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    whatsapp: {
+        type: String,
+        required: true,
+        unique: true
+    },
     password: {
         type: String,
         required: true
@@ -19,10 +24,6 @@ const Schema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'active'
     },
-    devices: [{
-        type: mongoose.Types.ObjectId,
-        ref: 'Device'
-    }],
     refreshToken: {
         type: String
     },
