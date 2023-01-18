@@ -154,8 +154,12 @@ const login = asyncHandler(async (req, res) => {
 
     // if updateDB success, thenset cookies 
     res.cookie('refreshToken', refreshToken, {
-        maxAge: 24 * 60 * 60 * 1000,
-        httpOnly: true
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        // secure: true,
+        // sameSite: 'strict',
+        // domain: 'http:localhost/3000',
+        // path: '/'
     })
     // return
     res.status(200).json({
