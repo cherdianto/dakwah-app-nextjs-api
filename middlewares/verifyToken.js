@@ -6,6 +6,7 @@ const asyncHandler = require('express-async-handler')
 const env = dotenv.config().parsed
 
 const verifyToken = asyncHandler(async (req, res, next) => {
+    // const refreshToken = req.cookies.refreshToken
     let userId = ''
 
     const authHeader = req.headers['authorization']
