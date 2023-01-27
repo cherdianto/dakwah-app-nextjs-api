@@ -103,7 +103,7 @@ const updateContent = asyncHandler( async(req, res) => {
         throw new Error("CONTENT_UPDATE_FAILED")
     }
 
-    console.log(content)
+    // console.log(content)
 
     res.status(200).json({
         status: true,
