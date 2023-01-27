@@ -100,7 +100,7 @@ const register = asyncHandler(async (req, res) => {
 
     } catch (error) {
         res.status(500)
-        console.log(error)
+        // console.log(error)
         throw new Error('USER_REGISTER_FAILED')
     }
 })
@@ -273,13 +273,13 @@ const updateProfile = asyncHandler(async (req, res) => {
 
     } catch (error) {
         res.status(500)
-        console.log(error)
+        // console.log(error)
         throw new Error('USER_REGISTER_FAILED')
     }
 })
 
 const logout = asyncHandler(async (req, res) => {
-    console.log(req.cookies)
+    // console.log(req.cookies)
     const userRefreshToken = req.cookies.refreshToken
 
     if (!userRefreshToken) {
@@ -399,8 +399,8 @@ const changePassword = asyncHandler(async (req, res) => {
 
 const refreshToken = asyncHandler(async (req, res) => {
     const userRefreshToken = req.cookies.refreshToken
-    console.log('masuk refresh token')
-    console.log(userRefreshToken)
+    // console.log('masuk refresh token')
+    // console.log(userRefreshToken)
 
     if (!userRefreshToken) {
         res.status(401)
@@ -437,7 +437,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 const getUser = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id)
-    console.log(user)
+    // console.log(user)
     res.status(200).json({
         status: true,
         message: "GET_USER_SUCCESS",
@@ -447,7 +447,7 @@ const getUser = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
     // form : email, oldpassword, newpassword
-    console.log(req.query.email)
+    // console.log(req.query.email)
 
     const email = req.query.email
 
@@ -479,7 +479,7 @@ const resetPassword = asyncHandler(async (req, res) => {
         expiryAt
     })
 
-    console.log(newToken)
+    // console.log(newToken)
     if(!newToken){
         res.status(400)
         throw new Error("RESET_LINK_FAILED")

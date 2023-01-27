@@ -86,7 +86,7 @@ const updateContent = asyncHandler( async(req, res) => {
         field['content.$[indexContent].matan'] = req.body.matan
     }
 
-    console.log(field)
+    // console.log(field)
 
     const content = await Materi.findByIdAndUpdate(
         materiId, 
@@ -96,7 +96,7 @@ const updateContent = asyncHandler( async(req, res) => {
             new: true 
         })
 
-        console.log(content)
+        // console.log(content)
 
     if(!content){
         res.status(400)

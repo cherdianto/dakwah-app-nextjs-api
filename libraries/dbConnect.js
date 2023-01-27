@@ -3,7 +3,7 @@ const dotenv = require('dotenv')
 
 const env = dotenv.config().parsed
 const dbUrl = env.ENV === 'dev' ? env.ATLAS_DB : 'mongodb://127.0.0.1:27017/dakwahbot'
-console.log(dbUrl)
+// console.log(dbUrl)
 
 function dbConnection(){
         mongoose.connect(dbUrl, {
