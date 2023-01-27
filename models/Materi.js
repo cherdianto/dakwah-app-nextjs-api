@@ -7,7 +7,6 @@ const Schema = new mongoose.Schema({
     },
     img: {
         type: String,
-        required: true,
         default: 'https://i.ibb.co/4m50NPZ/asparagus.jpg'
     },
     rating: Number,

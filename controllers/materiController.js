@@ -12,7 +12,9 @@ const addMateri = asyncHandler( async( req, res) => {
         name,
         img,
         description,
-        content 
+        content,
+        label: req.body.label,
+
     })
 
     if(!newMateri){

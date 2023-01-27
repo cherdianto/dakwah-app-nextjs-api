@@ -24,7 +24,13 @@ const Schema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'active'
     },
+    language: {
+        type: String
+    },
     refreshToken: {
+        type: String
+    },
+    accessToken: {
         type: String
     },
     salt: {

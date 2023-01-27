@@ -69,6 +69,15 @@ const register = asyncHandler(async (req, res) => {
         throw new Error('DUPLICATE_EMAIL')
     }
 
+    const whatsappExist = await User.findOne({
+        whatsapp
+    })
+
+    if (whatsappExist) {
+        res.status(400)
+        throw new Error('DUPLICATE_WHATSAPP')
+    }
+
     // make salt
     let salt = await bcrypt.genSalt(12)
     // hash the password
@@ -91,6 +100,7 @@ const register = asyncHandler(async (req, res) => {
 
     } catch (error) {
         res.status(500)
+        // console.log(error)
         throw new Error('USER_REGISTER_FAILED')
     }
 })
@@ -143,7 +153,8 @@ const login = asyncHandler(async (req, res) => {
         _id: user._id
     }, {
         $set: {
-            refreshToken
+            refreshToken,
+            accessToken
         }
     })
 
@@ -161,18 +172,114 @@ const login = asyncHandler(async (req, res) => {
         // domain: 'http:localhost/3000',
         // path: '/'
     })
+
+    res.cookie('accessToken', accessToken, {
+        maxAge: 1 * 60 * 60 * 1000,
+        httpOnly: true,
+        // secure: true,
+        // sameSite: 'strict',
+        // domain: 'http:localhost/3000',
+        // path: '/'
+    })
     // return
     res.status(200).json({
         status: true,
         message: "LOGIN_SUCCESS",
         fullname: user.fullname,
+        whatsapp: user.whatsapp,
+        email: user.email,
+        language: user.language,
         accessToken,
         refreshToken
     })
 })
 
+const updateProfile = asyncHandler(async (req, res) => {
+    const {
+        fullname,
+        email,
+        whatsapp,
+        language
+    } = req.body
+
+    const userId = req.user._id
+
+    // check the req.body
+    if (!fullname) {
+        res.status(400)
+        throw new Error('FULLNAME_REQUIRED')
+    }
+
+    if (!email) {
+        res.status(400)
+        throw new Error('EMAIL_REQUIRED')
+    }
+
+    if (!whatsapp) {
+        res.status(400)
+        throw new Error('WHATSAPP_REQUIRED')
+    }
+
+    if (!language) {
+        res.status(400)
+        throw new Error('LANGUAGE_REQUIRED')
+    }
+
+    // const userExist = await User.findOne({
+    //     email: email
+    // })
+
+    // if (userExist) {
+    //     res.status(400)
+    //     throw new Error('DUPLICATE_EMAIL')
+    // }
+    if( whatsapp != req.user.whatsapp ){
+        const whatsappExist = await User.findOne({
+            whatsapp
+        })
+    
+        if (whatsappExist) {
+            res.status(400)
+            throw new Error('DUPLICATE_WHATSAPP')
+        }
+    }
+
+    // // make salt
+    // let salt = await bcrypt.genSalt(12)
+    // // hash the password
+    // let hashedPassword = await bcrypt.hash(password, salt)
+
+    // store user info to DB
+    try {
+        const user = await User.findByIdAndUpdate( userId, {
+            $set: {
+                fullname,
+                whatsapp,
+                language,
+                email
+            }
+        }, { new: true })
+
+        res.status(200).json({
+            status: true,
+            message: 'PROFILE_UPDATE_SUCCESS',
+            user : {
+                fullname,
+                whatsapp,
+                language,
+                email
+            }
+        })
+
+    } catch (error) {
+        res.status(500)
+        // console.log(error)
+        throw new Error('USER_REGISTER_FAILED')
+    }
+})
+
 const logout = asyncHandler(async (req, res) => {
-    console.log(req.cookies)
+    // console.log(req.cookies)
     const userRefreshToken = req.cookies.refreshToken
 
     if (!userRefreshToken) {
@@ -193,7 +300,8 @@ const logout = asyncHandler(async (req, res) => {
         _id: user._id
     }, {
         $set: {
-            refreshToken: ''
+            refreshToken: '',
+            accessToken: ''
         }
     })
 
@@ -203,6 +311,7 @@ const logout = asyncHandler(async (req, res) => {
     }
 
     res.clearCookie('refreshToken')
+    res.clearCookie('accessToken')
 
     return res.status(200).json({
         status: true,
@@ -290,6 +399,8 @@ const changePassword = asyncHandler(async (req, res) => {
 
 const refreshToken = asyncHandler(async (req, res) => {
     const userRefreshToken = req.cookies.refreshToken
+    // console.log('masuk refresh token')
+    // console.log(userRefreshToken)
 
     if (!userRefreshToken) {
         res.status(401)
@@ -326,7 +437,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 const getUser = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id)
-    console.log(user)
+    // console.log(user)
     res.status(200).json({
         status: true,
         message: "GET_USER_SUCCESS",
@@ -336,7 +447,7 @@ const getUser = asyncHandler(async (req, res) => {
 
 const resetPassword = asyncHandler(async (req, res) => {
     // form : email, oldpassword, newpassword
-    console.log(req.query.email)
+    // console.log(req.query.email)
 
     const email = req.query.email
 
@@ -368,7 +479,7 @@ const resetPassword = asyncHandler(async (req, res) => {
         expiryAt
     })
 
-    console.log(newToken)
+    // console.log(newToken)
     if(!newToken){
         res.status(400)
         throw new Error("RESET_LINK_FAILED")
@@ -413,5 +524,6 @@ module.exports = {
     register,
     getUser,
     resetPassword,
-    validateResetLink
+    validateResetLink,
+    updateProfile
 }
