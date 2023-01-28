@@ -173,14 +173,14 @@ export const login = asyncHandler(async (req, res) => {
         path: '/'
     })
 
-    res.cookie('accessToken', accessToken, {
-        maxAge: 1 * 60 * 60 * 1000,
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        domain: 'cherdianto.site',
-        path: '/'
-    })
+    // res.cookie('accessToken', accessToken, {
+    //     maxAge: 1 * 60 * 60 * 1000,
+    //     httpOnly: true,
+    //     secure: true,
+    //     sameSite: 'strict',
+    //     domain: 'cherdianto.site',
+    //     path: '/'
+    // })
     // return
     res.status(200).json({
         status: true,
@@ -284,7 +284,18 @@ export const logout = asyncHandler(async (req, res) => {
 
     if (!userRefreshToken) {
         res.status(204)
-        throw new Error("NO_REFRESH_TOKEN")
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            domain: 'cherdianto.site',
+            path: '/'
+        })
+        // throw new Error("NO_REFRESH_TOKEN")
+        return res.status(200).json({
+            status: true,
+            message: "LOGGED_OUT_SUCCESS_WTH_RFSTKN"
+        })
     }
 
     // const user = await User.findOne({
@@ -305,13 +316,13 @@ export const logout = asyncHandler(async (req, res) => {
             domain: 'cherdianto.site',
             path: '/'
         })
-        res.clearCookie('accessToken', {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'strict',
-            domain: 'cherdianto.site',
-            path: '/'
-        })
+        // res.clearCookie('accessToken', {
+        //     httpOnly: true,
+        //     secure: true,
+        //     sameSite: 'strict',
+        //     domain: 'cherdianto.site',
+        //     path: '/'
+        // })
 
         if (error) {
             res.status(401)
