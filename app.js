@@ -1,14 +1,14 @@
 import express from 'express';
-import dbConnection from './libraries/dbConnect.js'
+import dbConnection from './src/libraries/dbConnect.js'
 import dotenv from 'dotenv'
 const env = dotenv.config().parsed
-import errorHandler from './middlewares/errorMiddleware.js'
-import morgan from 'morgan'
+import errorHandler from './src/middlewares/errorMiddleware.js'
+// import morgan from 'morgan'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 // import routes
-import authRouter from './routers/authRouter.js'
-import materiRouter from './routers/materiRouter.js'
+import authRouter from './src/routers/authRouter.js'
+import materiRouter from './src/routers/materiRouter.js'
 
 dbConnection();
 
@@ -25,7 +25,7 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
-app.use(morgan('dev'))
+// app.use(morgan('dev'))
 
 // routers
 app.use('/auth', authRouter)
