@@ -1,6 +1,6 @@
 import express from 'express'
-import { register, login, logout, refreshToken, changePassword, getUser, resetPassword, validateResetLink, updateProfile } from '../controllers/AuthController.js'
 import verifyToken from '../middlewares/verifyToken.js'
+import { register, login, logout, refreshToken, changePassword, getUser, resetPassword, validateResetLink, updateProfile } from '../controllers/AuthController.js'
 const router = express.Router()
 
 router.post('/register', register)
