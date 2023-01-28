@@ -169,7 +169,7 @@ export const login = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        domain: 'https://moslemguide.cherdianto.site',
+        domain: 'cherdianto.site',
         path: '/'
     })
 
@@ -178,7 +178,7 @@ export const login = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: true,
         sameSite: 'strict',
-        domain: 'https://moslemguide.cherdianto.site',
+        domain: 'cherdianto.site',
         path: '/'
     })
     // return
