@@ -279,20 +279,21 @@ export const updateProfile = asyncHandler(async (req, res) => {
 })
 
 export const logout = asyncHandler(async (req, res) => {
-    // console.log(req.cookies)
     const userRefreshToken = req.cookies.refreshToken
+    console.log(req.cookies)
 
     if (!userRefreshToken) {
         res.status(204)
-        throw new Error("USER_NOT_LOGGED_IN")
+        throw new Error("NO_REFRESH_TOKEN")
     }
 
     const user = await User.findOne({
         refreshToken: userRefreshToken
     })
+
     if (!user) {
         res.status(204)
-        throw new Error("USER_NOT_LOGGED_IN")
+        throw new Error("USER_NOT_FOUND")
     }
 
     // update database
