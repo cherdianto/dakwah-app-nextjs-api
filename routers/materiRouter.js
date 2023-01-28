@@ -1,7 +1,7 @@
-const express = require('express')
-const { showContent, updateContent, addContent, deleteContent } = require('../controllers/contentController')
-const { addMateri, showMateri, showAllMateri, updateMateri, deleteMateri } = require('../controllers/materiController')
-const verifyToken = require('../middlewares/verifyToken')
+import express from 'express'
+import { showContent, updateContent, addContent, deleteContent } from '../controllers/contentController.js'
+import { addMateri, showMateri, showAllMateri, updateMateri, deleteMateri } from '../controllers/materiController.js'
+import verifyToken from '../middlewares/verifyToken.js'
 const router = express.Router()
 
 // MATERI MANAGEMENT
@@ -17,4 +17,4 @@ router.put('/:materiid/content/:contentid', verifyToken, updateContent)
 router.post('/:materiid/content', verifyToken, addContent)
 router.delete('/:materiid/content/:contentid', verifyToken, deleteContent)
 
-module.exports = router
+export default router

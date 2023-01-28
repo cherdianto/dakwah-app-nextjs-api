@@ -1,10 +1,10 @@
-const Materi = require('../models/Materi')
-const asyncHandler = require('express-async-handler')
-const mongoose = require('mongoose')
-const dotenv = require('dotenv')
+import Materi from '../models/Materi.js'
+import asyncHandler from 'express-async-handler'
+import mongoose from 'mongoose'
+import dotenv from 'dotenv'
 const env = dotenv.config().parsed
 
-const addMateri = asyncHandler( async( req, res) => {
+export const addMateri = asyncHandler( async( req, res) => {
     // @PENDING
     // LATER IT SHOULD BE PROTECTED BY RBAC (ONLY ADMIN CAN ADD MATERI)
     const { name, img, description, content } = req.body
@@ -29,7 +29,7 @@ const addMateri = asyncHandler( async( req, res) => {
     })
 })
 
-const showMateri = asyncHandler( async(req, res) => {
+export const showMateri = asyncHandler( async(req, res) => {
     const materiId = req.params.materiid
 
     if(!materiId) {
@@ -56,7 +56,7 @@ const showMateri = asyncHandler( async(req, res) => {
     })
 })
 
-const showAllMateri = asyncHandler( async(req, res) => {
+export const showAllMateri = asyncHandler( async(req, res) => {
     const allMateri = await Materi.find({})
 
     if(!allMateri){
@@ -72,7 +72,7 @@ const showAllMateri = asyncHandler( async(req, res) => {
 })
 
 
-const deleteMateri = asyncHandler( async(req, res) => {
+export const deleteMateri = asyncHandler( async(req, res) => {
     // @PENDING
     // LATER IT SHOULD BE PROTECTED BY RBAC (ONLY ADMIN CAN DELETE MATERI)
 
@@ -102,7 +102,7 @@ const deleteMateri = asyncHandler( async(req, res) => {
     })
 })
 
-const updateMateri = asyncHandler( async(req, res) => {
+export const updateMateri = asyncHandler( async(req, res) => {
     // @PENDING
     // LATER IT SHOULD BE PROTECTED BY RBAC (ONLY ADMIN CAN UPDATE MATERI)
 
@@ -136,13 +136,6 @@ const updateMateri = asyncHandler( async(req, res) => {
     })
 })
 
-module.exports = {
-    addMateri,
-    showMateri,
-    showAllMateri,
-    deleteMateri,
-    updateMateri
-}
 
 
 // const deleteMateri = asyncHandler( async(req, res) => {

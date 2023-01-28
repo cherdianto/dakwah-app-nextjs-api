@@ -1,14 +1,14 @@
-const express = require('express');
-const dbConnection = require('./libraries/dbConnect')
-const dotenv = require('dotenv')
+import express from 'express';
+import dbConnection from './libraries/dbConnect.js'
+import dotenv from 'dotenv'
 const env = dotenv.config().parsed
-const errorHandler = require('./middlewares/errorMiddleware')
-const morgan = require('morgan')
-const cookieParser = require('cookie-parser')
-const cors = require('cors')
+import errorHandler from './middlewares/errorMiddleware.js'
+import morgan from 'morgan'
+import cookieParser from 'cookie-parser'
+import cors from 'cors'
 // import routes
-const authRouter = require('./routers/authRouter')
-const materiRouter = require('./routers/materiRouter')
+import authRouter from './routers/authRouter.js'
+import materiRouter from './routers/materiRouter.js'
 
 dbConnection();
 

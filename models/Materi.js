@@ -1,4 +1,5 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
+
 
 const Schema = new mongoose.Schema({
     name: {
@@ -25,4 +26,4 @@ const Schema = new mongoose.Schema({
     timestamps: {currentTime: () => Math.floor(Date.now() / 1000)}
 })
 
-module.exports=mongoose.model('Materi', Schema)
+export default mongoose.model('Materi', Schema)

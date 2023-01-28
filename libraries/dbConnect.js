@@ -1,5 +1,5 @@
-const mongoose = require("mongoose")
-const dotenv = require('dotenv')
+import mongoose from "mongoose"
+import dotenv from 'dotenv'
 
 const env = dotenv.config().parsed
 const dbUrl = env.ENV === 'dev' ? env.ATLAS_DB : 'mongodb://127.0.0.1:27017/dakwahbot'
@@ -16,4 +16,4 @@ function dbConnection(){
     db.once('open', () => console.log('database connected'))
 }
 
-module.exports=dbConnection
+export default dbConnection

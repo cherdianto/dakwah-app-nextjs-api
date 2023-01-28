@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
-const User = require('../models/User')
-const asyncHandler = require('express-async-handler')
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+import User from '../models/User.js'
+import asyncHandler from 'express-async-handler'
 
 const env = dotenv.config().parsed
 
@@ -39,4 +39,4 @@ const verifyToken = asyncHandler(async (req, res, next) => {
     next()
 })
 
-module.exports = verifyToken
+export default verifyToken

@@ -1,6 +1,6 @@
-const express = require('express')
-const { register, login, logout, refreshToken, changePassword, getUser, resetPassword, validateResetLink, updateProfile } = require('../controllers/AuthController')
-const verifyToken = require('../middlewares/verifyToken')
+import express from 'express'
+import { register, login, logout, refreshToken, changePassword, getUser, resetPassword, validateResetLink, updateProfile } from '../controllers/AuthController.js'
+import verifyToken from '../middlewares/verifyToken.js'
 const router = express.Router()
 
 router.post('/register', register)
@@ -14,4 +14,4 @@ router.get('/reset-password', resetPassword)
 router.get('/rst', validateResetLink)
 router.get('/refreshToken', refreshToken)
 
-module.exports = router
+export default router

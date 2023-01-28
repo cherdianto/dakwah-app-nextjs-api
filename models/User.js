@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const Schema = new mongoose.Schema({
     fullname: {
@@ -46,4 +46,4 @@ const Schema = new mongoose.Schema({
     timestamps: {currentTime: () => Math.floor(Date.now() / 1000)}
 })
 
-module.exports=mongoose.model('User', Schema)
+export default mongoose.model('User', Schema)

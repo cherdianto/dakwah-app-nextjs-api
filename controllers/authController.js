@@ -1,10 +1,10 @@
-const User = require("../models/User")
-const bcrypt = require('bcrypt')
-const asyncHandler = require('express-async-handler')
-const jwt = require('jsonwebtoken')
-const dotenv = require('dotenv')
-const Token = require("../models/Token")
-const crypto = require('crypto')
+import User from "../models/User.js"
+import bcrypt from 'bcrypt'
+import asyncHandler from 'express-async-handler'
+import jwt from 'jsonwebtoken'
+import dotenv from 'dotenv'
+import Token from "../models/Token.js"
+import crypto from 'crypto'
 
 const env = dotenv.config().parsed
 
@@ -31,7 +31,7 @@ const generateRefreshToken = (payload) => {
 }
 
 
-const register = asyncHandler(async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
     const {
         fullname,
         email,
@@ -105,7 +105,7 @@ const register = asyncHandler(async (req, res) => {
     }
 })
 
-const login = asyncHandler(async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
     const {
         email,
         password
@@ -194,7 +194,7 @@ const login = asyncHandler(async (req, res) => {
     })
 })
 
-const updateProfile = asyncHandler(async (req, res) => {
+export const updateProfile = asyncHandler(async (req, res) => {
     const {
         fullname,
         email,
@@ -278,7 +278,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     }
 })
 
-const logout = asyncHandler(async (req, res) => {
+export const logout = asyncHandler(async (req, res) => {
     // console.log(req.cookies)
     const userRefreshToken = req.cookies.refreshToken
 
@@ -319,7 +319,7 @@ const logout = asyncHandler(async (req, res) => {
     })
 })
 
-const changePassword = asyncHandler(async (req, res) => {
+export const changePassword = asyncHandler(async (req, res) => {
     // form : email, oldpassword, newpassword
 
     const {
@@ -397,7 +397,7 @@ const changePassword = asyncHandler(async (req, res) => {
     })
 })
 
-const refreshToken = asyncHandler(async (req, res) => {
+export const refreshToken = asyncHandler(async (req, res) => {
     const userRefreshToken = req.cookies.refreshToken
     // console.log('masuk refresh token')
     // console.log(userRefreshToken)
@@ -434,7 +434,7 @@ const refreshToken = asyncHandler(async (req, res) => {
     })
 })
 
-const getUser = asyncHandler(async (req, res) => {
+export const getUser = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id)
     // console.log(user)
@@ -445,7 +445,7 @@ const getUser = asyncHandler(async (req, res) => {
     })
 })
 
-const resetPassword = asyncHandler(async (req, res) => {
+export const resetPassword = asyncHandler(async (req, res) => {
     // form : email, oldpassword, newpassword
     // console.log(req.query.email)
 
@@ -492,7 +492,7 @@ const resetPassword = asyncHandler(async (req, res) => {
     })
 })
 
-const validateResetLink = asyncHandler(async (req, res) => {
+export const validateResetLink = asyncHandler(async (req, res) => {
     const token = req.query.token
 
     const isValid = await Token.findOne({token})
@@ -515,15 +515,3 @@ const validateResetLink = asyncHandler(async (req, res) => {
     //     isValid
     // })
 })
-
-module.exports = {
-    refreshToken,
-    changePassword,
-    logout,
-    login,
-    register,
-    getUser,
-    resetPassword,
-    validateResetLink,
-    updateProfile
-}

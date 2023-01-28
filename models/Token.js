@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+import mongoose from 'mongoose'
 
 const Schema = new mongoose.Schema({
     email: {
@@ -21,4 +21,4 @@ const Schema = new mongoose.Schema({
     timestamps: {currentTime: () => Math.floor(Date.now() / 1000)}
 })
 
-module.exports=mongoose.model('Token', Schema)
+export default mongoose.model('Token', Schema)
