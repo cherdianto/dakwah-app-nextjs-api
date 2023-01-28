@@ -310,8 +310,20 @@ export const logout = asyncHandler(async (req, res) => {
         throw new Error("LOG_OUT_FAILED")
     }
 
-    res.clearCookie('refreshToken')
-    res.clearCookie('accessToken')
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        domain: 'cherdianto.site',
+        path: '/'
+    })
+    res.clearCookie('accessToken', {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        domain: 'cherdianto.site',
+        path: '/'
+    })
 
     return res.status(200).json({
         status: true,
