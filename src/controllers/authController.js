@@ -167,19 +167,19 @@ export const login = asyncHandler(async (req, res) => {
     res.cookie('refreshToken', refreshToken, {
         maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
-        // secure: true,
-        // sameSite: 'strict',
-        // domain: 'http:localhost/3000',
-        // path: '/'
+        secure: true,
+        sameSite: 'strict',
+        domain: 'https://moslemguide.cherdianto.site',
+        path: '/'
     })
 
     res.cookie('accessToken', accessToken, {
         maxAge: 1 * 60 * 60 * 1000,
         httpOnly: true,
-        // secure: true,
-        // sameSite: 'strict',
-        // domain: 'http:localhost/3000',
-        // path: '/'
+        secure: true,
+        sameSite: 'strict',
+        domain: 'https://moslemguide.cherdianto.site',
+        path: '/'
     })
     // return
     res.status(200).json({
