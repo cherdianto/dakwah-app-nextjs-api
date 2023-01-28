@@ -407,19 +407,26 @@ export const refreshToken = asyncHandler(async (req, res) => {
         throw new Error("REFRESH_TOKEN_NOT_FOUND")
     }
 
-    const user = await User.findOne({
-        refreshToken: userRefreshToken
-    })
+    // const user = await User.findOne({
+    //     refreshToken: userRefreshToken
+    // })
 
-    if (!user) {
-        res.status(401)
-        throw new Error("USER_NOT_LOGGED_IN")
-    }
+    // if (!user) {
+    //     res.status(401)
+    //     throw new Error("USER_NOT_LOGGED_IN")
+    // }
 
-    jwt.verify(userRefreshToken, refreshSecretKey, (error, decoded) => {
+    jwt.verify(userRefreshToken, refreshSecretKey, async (error, decoded) => {
         if (error) {
             res.status(401)
             throw new Error("INVALID_REFRESH_TOKEN")
+        }
+
+        const user = await User.findById(decoded.id)
+    
+        if (!user) {
+            res.status(401)
+            throw new Error("USER_NOT_FOUND")
         }
 
         const accessToken = generateAccessToken({
