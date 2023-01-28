@@ -287,49 +287,66 @@ export const logout = asyncHandler(async (req, res) => {
         throw new Error("NO_REFRESH_TOKEN")
     }
 
-    const user = await User.findOne({
-        refreshToken: userRefreshToken
-    })
+    // const user = await User.findOne({
+    //     refreshToken: userRefreshToken
+    // })
 
-    if (!user) {
-        res.status(204)
-        throw new Error("USER_NOT_FOUND")
-    }
+    // if (!user) {
+    //     res.status(204)
+    //     throw new Error("USER_NOT_FOUND")
+    // }
 
-    // update database
-    const updateDb = await User.updateOne({
-        _id: user._id
-    }, {
-        $set: {
-            refreshToken: '',
-            accessToken: ''
+    jwt.verify(userRefreshToken, refreshSecretKey, async (error, decoded) => {
+        
+        res.clearCookie('refreshToken', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            domain: 'cherdianto.site',
+            path: '/'
+        })
+        res.clearCookie('accessToken', {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'strict',
+            domain: 'cherdianto.site',
+            path: '/'
+        })
+
+        if (error) {
+            res.status(401)
+            throw new Error("INVALID_REFRESH_TOKEN")
         }
+
+        const user = await User.findById(decoded.id)
+    
+        if (!user) {
+            res.status(401)
+            throw new Error("USER_NOT_FOUND")
+        }
+        // update database
+        const updateDb = await User.updateOne({
+            _id: user._id
+        }, {
+            $set: {
+                refreshToken: '',
+                accessToken: ''
+            }
+        })
+    
+        if (!updateDb) {
+            res.status(500)
+            throw new Error("LOG_OUT_FAILED")
+        }
+    
+        
+    
+        return res.status(200).json({
+            status: true,
+            message: "LOGGED_OUT_SUCCESS"
+        })
     })
 
-    if (!updateDb) {
-        res.status(500)
-        throw new Error("LOG_OUT_FAILED")
-    }
-
-    res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        domain: 'cherdianto.site',
-        path: '/'
-    })
-    res.clearCookie('accessToken', {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        domain: 'cherdianto.site',
-        path: '/'
-    })
-
-    return res.status(200).json({
-        status: true,
-        message: "LOGGED_OUT_SUCCESS"
-    })
 })
 
 export const changePassword = asyncHandler(async (req, res) => {
