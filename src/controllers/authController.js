@@ -92,10 +92,12 @@ export const register = asyncHandler(async (req, res) => {
             password: hashedPassword
         })
 
+        const { password, ...rest} = user
+
         res.status(200).json({
             status: true,
             message: 'USER_REGISTER_SUCCESS',
-            user
+            user: rest
         })
 
     } catch (error) {
@@ -189,8 +191,8 @@ export const login = asyncHandler(async (req, res) => {
         whatsapp: user.whatsapp,
         email: user.email,
         language: user.language,
-        accessToken,
-        refreshToken
+        // accessToken,
+        // refreshToken
     })
 })
 
@@ -484,7 +486,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
 export const getUser = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(req.user._id)
+    const user = await User.findById(req.user._id).select('-password')
     // console.log(user)
     res.status(200).json({
         status: true,
