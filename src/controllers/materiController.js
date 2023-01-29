@@ -14,7 +14,6 @@ export const addMateri = asyncHandler( async( req, res) => {
         description,
         content,
         label: req.body.label,
-
     })
 
     if(!newMateri){
@@ -57,7 +56,7 @@ export const showMateri = asyncHandler( async(req, res) => {
 })
 
 export const showAllMateri = asyncHandler( async(req, res) => {
-    const allMateri = await Materi.find({})
+    const allMateri = await Materi.find({}).select('-content')
 
     if(!allMateri){
         res.status(500)
