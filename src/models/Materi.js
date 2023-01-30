@@ -15,8 +15,8 @@ const Schema = new mongoose.Schema({
     label: Array,
     status: {
         type: String,
-        enum: ['active', 'inactive'],
-        default: 'active'
+        enum: ['active', 'inactive', 'draft'],
+        default: 'draft'
     },
     description: String,
     content: Array,
