@@ -176,12 +176,12 @@ export const login = asyncHandler(async (req, res) => {
     // if updateDB success, then set cookies 
     if(env.ENV === 'dev'){
         res.cookie('refreshToken', refreshToken, {
-            maxAge: 2 * 60 * 1000,
+            maxAge: 90 * 24 * 60 * 60 * 1000,
             httpOnly: true
         })
     } else {
         res.cookie('refreshToken', refreshToken, {
-            maxAge: 4 * 60 * 1000,
+            maxAge: 90 * 24 * 60 * 60 * 1000,
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
