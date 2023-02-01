@@ -108,10 +108,16 @@ export const register = asyncHandler(async (req, res) => {
 })
 
 export const login = asyncHandler(async (req, res) => {
-    const {
-        email,
-        password
-    } = req.body
+    // const {
+    //     email,
+    //     password
+    // } = req.body
+
+    // $SECURECODE 
+    // problem : SQL INJECTION 
+    // solution : type casting -> toString()
+    const email = req.body.email.toString()
+    const password = req.body.password.toString()
 
     // check the req.body
     if (!email) {
@@ -143,11 +149,13 @@ export const login = asyncHandler(async (req, res) => {
 
     // next, generate tokens (access & refresh)
     const accessToken = generateAccessToken({
-        id: user._id
+        id: user._id,
+        role: user.role
     })
 
     const refreshToken = generateRefreshToken({
-        id: user._id
+        id: user._id,
+        role: user.role
     })
 
     // store refreshToken to database
@@ -168,12 +176,12 @@ export const login = asyncHandler(async (req, res) => {
     // if updateDB success, then set cookies 
     if(env.ENV === 'dev'){
         res.cookie('refreshToken', refreshToken, {
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 2 * 60 * 1000,
             httpOnly: true
         })
     } else {
         res.cookie('refreshToken', refreshToken, {
-            maxAge: 7 * 24 * 60 * 60 * 1000,
+            maxAge: 4 * 60 * 1000,
             httpOnly: true,
             secure: true,
             sameSite: 'strict',
@@ -197,8 +205,9 @@ export const login = asyncHandler(async (req, res) => {
         fullname: user.fullname,
         whatsapp: user.whatsapp,
         email: user.email,
+        role: user.role,
         language: user.language,
-        // accessToken,
+        accessToken,
         // refreshToken
     })
 })
@@ -341,7 +350,7 @@ export const logout = asyncHandler(async (req, res) => {
             res.status(401)
             throw new Error("USER_NOT_FOUND")
         }
-        
+
         // update database
         const updateDb = await User.updateOne({
             _id: user._id
@@ -478,7 +487,8 @@ export const refreshToken = asyncHandler(async (req, res) => {
         }
 
         const accessToken = generateAccessToken({
-            id: user._id
+            id: user._id,
+            role: user.role
         })
 
         res.status(200).json({
@@ -492,7 +502,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
 export const getUser = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id).select('-password -accessToken -refreshToken')
-    // console.log(user)
+    console.log(user)
     res.status(200).json({
         status: true,
         message: "GET_USER_SUCCESS",
