@@ -501,7 +501,7 @@ export const refreshToken = asyncHandler(async (req, res) => {
 
 export const getUser = asyncHandler(async (req, res) => {
 
-    const user = await User.findById(req.user._id).select('-password -accessToken -refreshToken')
+    const user = await User.findById(req.user._id).select('-password -refreshToken')
     console.log(user)
     res.status(200).json({
         status: true,
