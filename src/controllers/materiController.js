@@ -5,8 +5,6 @@ import dotenv from 'dotenv'
 const env = dotenv.config().parsed
 
 export const addMateri = asyncHandler( async( req, res) => {
-    // @PENDING
-    // LATER IT SHOULD BE PROTECTED BY RBAC (ONLY ADMIN CAN ADD MATERI)
     const { name, img, description, content } = req.body
     const newMateri = await Materi.create({
         name,

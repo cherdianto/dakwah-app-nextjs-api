@@ -282,10 +282,11 @@ export const updateProfile = asyncHandler(async (req, res) => {
             status: true,
             message: 'PROFILE_UPDATE_SUCCESS',
             user : {
-                fullname,
-                whatsapp,
-                language,
-                email
+                fullname: user.fullname,
+                whatsapp: user.whatsapp,
+                language: user.language,
+                email: user.email,
+                role: user.role
             }
         })
 
@@ -511,15 +512,7 @@ export const getUser = asyncHandler(async (req, res) => {
 })
 
 export const resetPassword = asyncHandler(async (req, res) => {
-    // form : email, oldpassword, newpassword
-    // console.log(req.query.email)
-
     const email = req.query.email
-
-    // const user = req.user
-
-    // console.log(email)
-    // console.log(user)
 
     if (!email) {
         res.status(400)
@@ -572,7 +565,7 @@ export const validateResetLink = asyncHandler(async (req, res) => {
         throw new Error("EXPIRED")
     }
 
-    res.status(200).json("LINK ACTIVE, PROVIDE A FORM(OLD PWD, NEW PWD) TO USER VIA EJS")
+    res.status(200).json("LINK ACTIVE, PROVIDE A FORM(NEW PWD, NEW PWD CONFIRM) TO USER VIA EJS")
     // res.render('resetPassword')
     // res.status(200).json({
     //     status: true,
