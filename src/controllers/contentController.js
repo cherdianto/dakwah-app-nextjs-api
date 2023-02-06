@@ -76,8 +76,6 @@ export const updateContent = asyncHandler( async(req, res) => {
         field['content.$[indexContent].matan'] = req.body.matan
     }
 
-    // console.log(field)
-
     const content = await Materi.findByIdAndUpdate(
         materiId, 
         { $set: field }, 
@@ -86,14 +84,10 @@ export const updateContent = asyncHandler( async(req, res) => {
             new: true 
         })
 
-        // console.log(content)
-
     if(!content){
         res.status(400)
         throw new Error("CONTENT_UPDATE_FAILED")
     }
-
-    // console.log(content)
 
     res.status(200).json({
         status: true,

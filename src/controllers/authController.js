@@ -5,8 +5,11 @@ import jwt from 'jsonwebtoken'
 import dotenv from 'dotenv'
 import Token from "../models/Token.js"
 import crypto from 'crypto'
+import gmailSend from "../utils/emailSender.js"
 
 const env = dotenv.config().parsed
+
+const apiUrl = env.ENV === 'dev' ? env.URL_API_DEV : env.URL_API_PROD
 
 const accessSecretKey = env.ACCESS_SECRET_KEY
 const refreshSecretKey = env.REFRESH_SECRET_KEY
@@ -102,7 +105,6 @@ export const register = asyncHandler(async (req, res) => {
 
     } catch (error) {
         res.status(500)
-        // console.log(error)
         throw new Error('USER_REGISTER_FAILED')
     }
 })
@@ -292,14 +294,12 @@ export const updateProfile = asyncHandler(async (req, res) => {
 
     } catch (error) {
         res.status(500)
-        // console.log(error)
         throw new Error('USER_REGISTER_FAILED')
     }
 })
 
 export const logout = asyncHandler(async (req, res) => {
     const userRefreshToken = req.cookies.refreshToken
-    console.log(req.cookies)
 
     if (!userRefreshToken) {
         res.status(204)
@@ -388,9 +388,6 @@ export const changePassword = asyncHandler(async (req, res) => {
 
     const user = req.user
 
-    // console.log(email)
-    // console.log(user)
-
     if (!email || email == '') {
         res.status(400)
         throw new Error("EMAIL_REQUIRED")
@@ -457,8 +454,6 @@ export const changePassword = asyncHandler(async (req, res) => {
 
 export const refreshToken = asyncHandler(async (req, res) => {
     const userRefreshToken = req.cookies.refreshToken
-    // console.log('masuk refresh token')
-    // console.log(userRefreshToken)
 
     if (!userRefreshToken) {
         res.status(401)
@@ -503,7 +498,6 @@ export const refreshToken = asyncHandler(async (req, res) => {
 export const getUser = asyncHandler(async (req, res) => {
 
     const user = await User.findById(req.user._id).select('-password -refreshToken')
-    console.log(user)
     res.status(200).json({
         status: true,
         message: "GET_USER_SUCCESS",
@@ -529,7 +523,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
     let expiryAt = new Date()
     // expiryAt.setHours(expiryAt.getHours() + 24)
-    expiryAt.setMinutes(expiryAt.getMinutes() + 2)
+    expiryAt.setMinutes(expiryAt.getMinutes() + 15)
 
     const newToken = await Token.create({
         email,
@@ -537,16 +531,28 @@ export const resetPassword = asyncHandler(async (req, res) => {
         expiryAt
     })
 
-    // console.log(newToken)
     if(!newToken){
         res.status(400)
         throw new Error("RESET_LINK_FAILED")
     }
 
+    // sending email to email client
+    const sendEmail = await gmailSend({
+        to: email,
+        subject: 'Password Reset Request',
+        html: `<p>Berikut link untuk melakukan pengubahan password</p><p></p><p>${apiUrl}/auth/rst?token=${newToken.token}</p><p>Berlaku 15 menit</p><p></p><p>Abaikan jika Anda tidak melakukan permintaan permohonan pengubahan password.</p>`
+    })
+
+    if(sendEmail === 'error')
+    {
+        res.status(400)
+        throw new Error('SEND EMAIL FAILED')
+    }
+
     res.status(200).json({
         status: true,
         message: "RESET_LINK_SUCCESS",
-        token: newToken
+        // token: newToken
     })
 })
 
@@ -557,19 +563,100 @@ export const validateResetLink = asyncHandler(async (req, res) => {
 
     if(!isValid){
         res.status(400)
-        throw new Error("INVALID_TOKEN")
+        throw new Error("INVALID_TOKEN OR HAS BEEN USED")
     }
 
     if(new Date(isValid.expiryAt) < Date.now()){
         res.status(400)
-        throw new Error("EXPIRED")
+        // throw new Error("EXPIRED")
+        res.render('tokenExpired')
     }
 
-    res.status(200).json("LINK ACTIVE, PROVIDE A FORM(NEW PWD, NEW PWD CONFIRM) TO USER VIA EJS")
-    // res.render('resetPassword')
-    // res.status(200).json({
-    //     status: true,
-    //     message: "LINK_VALID",
-    //     isValid
-    // })
+    // res.status(200).json("LINK ACTIVE, PROVIDE A FORM(NEW PWD, NEW PWD CONFIRM) TO USER VIA EJS")
+    res.render('inputPassword', { token })
+})
+
+export const newPasswordFromReset = asyncHandler(async (req, res) => {
+    const {
+        token,
+        new_password,
+        confirm_new_password
+    } = req.body
+
+    if (!token || token == '') {
+        res.status(400)
+        throw new Error("TOKEN_REQUIRED")
+    }
+
+    if(!new_password || new_password == ''){
+        res.status(400)
+        throw new Error("NEW_PASSWORD_REQUIRED")
+    }
+
+    if (!confirm_new_password || confirm_new_password == '') {
+        res.status(400)
+        throw new Error("NEW_PASSWORD_REQUIRED")
+    }
+
+    if (new_password !== confirm_new_password) {
+        res.status(400)
+        throw new Error("PASSWORDS_NOT_MATCH")
+    }
+
+    if (new_password.trim().length === 0 || new_password.includes(" ")) {
+        res.status(400)
+        throw new Error("PASSWORD_CONTAIN_SPACE")
+    }
+
+    const isTokenValid = await Token.findOne({token})
+
+    if(!isTokenValid){
+        res.status(400)
+        throw new Error("INVALID_TOKEN")
+    }
+
+    if(new Date(isTokenValid.expiryAt) < Date.now()){
+        res.status(400)
+        // throw new Error("EXPIRED")
+        res.render('tokenExpired')
+    }
+
+    const user = await User.findOne({
+        email: isTokenValid.email
+    })
+
+    if (!user) {
+        res.status(400)
+        throw new Error("INVALID_TOKEN")
+    }
+
+    // make salt
+    let salt = await bcrypt.genSalt(12)
+    // hash the password
+    let hashedPassword = await bcrypt.hash(new_password, salt)
+
+    // update db
+    const updateDb = await User.updateOne({
+        _id: user._id
+    }, {
+        $set: {
+            password: hashedPassword
+        }
+    })
+
+    if (!updateDb) {
+        res.status(500)
+        throw new Error("PASSWORD_CHANGE_FAILED")
+    }
+
+    const deleteTokenDb = await Token.findOneAndDelete({
+        token
+    })
+
+    if (!deleteTokenDb) {
+        res.status(500)
+        throw new Error("DELETE_TOKEN_FAILED")
+    }
+
+    res.render('passwordSuccess')
 })
