@@ -1,3 +1,5 @@
+// reference : https://miracleio.me/snippets/use-gmail-with-nodemailer/
+
 import nodemailer from 'nodemailer'
 import dotenv from 'dotenv'
 const env = dotenv.config().parsed
