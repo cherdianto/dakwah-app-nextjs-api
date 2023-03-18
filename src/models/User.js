@@ -24,6 +24,11 @@ const Schema = new mongoose.Schema({
         enum: ['active', 'inactive'],
         default: 'active'
     },
+    role: {
+        type: String,
+        enum: ['user', 'editor', 'translator', 'administrator'],
+        default: 'user'
+    },
     language: {
         type: String
     },

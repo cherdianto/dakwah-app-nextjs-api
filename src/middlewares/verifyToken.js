@@ -33,7 +33,7 @@ const verifyToken = asyncHandler(async (req, res, next) => {
         res.status(400)
         throw new Error('NO_USER_FOUND')
     }
-    // req.jwt = decoded
+    
     req.user = user
 
     next()

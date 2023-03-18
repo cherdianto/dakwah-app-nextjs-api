@@ -8,6 +8,11 @@ const Schema = new mongoose.Schema({
     token: {
         type: String,
     },
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'active'
+    },
     expiryAt: {
         type: Number
     },
